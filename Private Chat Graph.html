@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HMI Touch-Friendly Chart</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #ffffff;
+    }
+    
+    .chart-container {
+      width: 700px;
+      height: 500px;
+      position: relative;
+      padding: 20px;
+    }
+    
+    .chart {
+      width: 100%;
+      height: 350px;
+      position: relative;
+      border-left: 1px solid #e0e0e0;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .grid-line {
+      position: absolute;
+      width: 100%;
+      height: 1px;
+      background-color: #f0f0f0;
+    }
+    
+    .grid-line-vertical {
+      position: absolute;
+      width: 1px;
+      height: 100%;
+      background-color: #e0e0e0;
+      top: 0;
+    }
+    
+    .y-axis {
+      position: absolute;
+      left: -40px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      color: #999;
+      font-size: 16px;
+    }
+    
+    .y-label {
+      transform: translateY(50%);
+    }
+    
+    .x-axis {
+      position: absolute;
+      bottom: -30px;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      color: #999;
+      font-size: 16px;
+    }
+    
+    .area {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+    }
+    
+    .vehicle-area {
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300"><path d="M0,200 C50,180 100,120 150,140 C200,160 250,80 300,120 C350,160 400,60 450,100 C500,140 550,120 600,160 L600,300 L0,300 Z" fill="%236961ff" fill-opacity="0.2" /></svg>') no-repeat;
+      background-size: 100% 100%;
+    }
+    
+    .pedestrian-area {
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300"><path d="M0,220 C50,240 100,200 150,180 C200,160 250,220 300,180 C350,140 400,180 450,140 C500,100 550,160 600,180 L600,300 L0,300 Z" fill="%232f80ed" fill-opacity="0.2" /></svg>') no-repeat;
+      background-size: 100% 100%;
+    }
+    
+    .line {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      fill: none;
+      stroke-width: 2;
+    }
+    
+    .vehicle-line {
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300"><path d="M0,200 C50,180 100,120 150,140 C200,160 250,80 300,120 C350,160 400,60 450,100 C500,140 550,120 600,160" fill="none" stroke="%236961ff" stroke-width="2.5" /></svg>') no-repeat;
+      background-size: 100% 100%;
+      filter: drop-shadow(0 0 4px rgba(105, 97, 255, 0.4));
+    }
+    
+    .pedestrian-line {
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300"><path d="M0,220 C50,240 100,200 150,180 C200,160 250,220 300,180 C350,140 400,180 450,140 C500,100 550,160 600,180" fill="none" stroke="%232f80ed" stroke-width="2.5" /></svg>') no-repeat;
+      background-size: 100% 100%;
+      filter: drop-shadow(0 0 4px rgba(47, 128, 237, 0.4));
+    }
+    
+    .legend {
+      display: flex;
+      justify-content: center;
+      margin-top: 40px;
+      gap: 30px;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      font-size: 16px;
+      color: #999;
+    }
+    
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    
+    .vehicle-color {
+      background-color: #6961ff;
+    }
+    
+    .pedestrian-color {
+      background-color: #2f80ed;
+    }
+    
+    /* Value display */
+    .value-display {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background-color: rgba(255, 255, 255, 0.95);
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 15px;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.2s;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      min-width: 180px;
+      z-index: 10;
+    }
+    
+    .value-header {
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #333;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 5px;
+    }
+    
+    .value-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      justify-content: space-between;
+    }
+    
+    .value-label {
+      display: flex;
+      align-items: center;
+    }
+    
+    .value-color {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+    
+    .value-vehicle {
+      background-color: #6961ff;
+    }
+    
+    .value-pedestrian {
+      background-color: #2f80ed;
+    }
+    
+    .value-number {
+      font-weight: 500;
+    }
+    
+    /* Touch area for interactive values */
+    .touch-area {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 5;
+      cursor: pointer;
+    }
+    
+    /* Touch point indicator */
+    .touch-indicator {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: rgba(0, 0, 0, 0.1);
+      border: 2px solid rgba(0, 0, 0, 0.3);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 6;
+    }
+    
+    /* Vertical indicator line */
+    .vertical-indicator {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      width: 2px;
+      background-color: rgba(0, 0, 0, 0.2);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 6;
+    }
+    
+    /* Touch-friendly styles */
+    .touch-friendly-button {
+      padding: 12px;
+      margin: 5px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      background-color: #f5f5f5;
+      color: #333;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      min-width: 44px;
+      min-height: 44px;
+    }
+    
+    /* Close button for value display */
+    .close-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: #f5f5f5;
+      border: none;
+      color: #666;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="chart-container">
+    <div class="chart">
+      <!-- Y-axis labels -->
+      <div class="y-axis">
+        <div class="y-label">150</div>
+        <div class="y-label">100</div>
+        <div class="y-label">50</div>
+        <div class="y-label">0</div>
+      </div>
+      
+      <!-- Grid lines -->
+      <div class="grid-line" style="top: 0%;"></div>
+      <div class="grid-line" style="top: 33.33%;"></div>
+      <div class="grid-line" style="top: 66.66%;"></div>
+      <div class="grid-line" style="top: 100%;"></div>
+      
+      <!-- Vertical grid lines -->
+      <div class="grid-line-vertical" style="left: 0%;"></div>
+      <div class="grid-line-vertical" style="left: 25%;"></div>
+      <div class="grid-line-vertical" style="left: 50%;"></div>
+      <div class="grid-line-vertical" style="left: 75%;"></div>
+      <div class="grid-line-vertical" style="left: 100%;"></div>
+      
+      <!-- X-axis labels -->
+      <div class="x-axis">
+        <div>May</div>
+        <div>June</div>
+        <div>July</div>
+        <div>August</div>
+        <div>Sept</div>
+      </div>
+      
+      <!-- Area charts -->
+      <div class="area vehicle-area"></div>
+      <div class="area pedestrian-area"></div>
+      
+      <!-- Line charts -->
+      <div class="line vehicle-line"></div>
+      <div class="line pedestrian-line"></div>
+      
+      <!-- Value display -->
+      <div class="value-display" id="valueDisplay">
+        <button class="close-btn" onclick="hideValueDisplay()">✕</button>
+        <div class="value-header">Traffic Details</div>
+        <div class="value-item">
+          <div class="value-label">
+            <div class="value-color value-vehicle"></div>
+            <span>Vehicle</span>
+          </div>
+          <span class="value-number vehicle-value">98</span>
+        </div>
+        <div class="value-item">
+          <div class="value-label">
+            <div class="value-color value-pedestrian"></div>
+            <span>Pedestrian</span>
+          </div>
+          <span class="value-number pedestrian-value">90</span>
+        </div>
+        <div class="value-item">
+          <div class="value-label">Month</div>
+          <span class="value-number month-value">May</span>
+        </div>
+      </div>
+      
+      <!-- Touch indicator -->
+      <div class="touch-indicator" id="touchIndicator"></div>
+      
+      <!-- Vertical indicator line -->
+      <div class="vertical-indicator" id="verticalIndicator"></div>
+      
+      <!-- Touch area for interactive values -->
+      <div class="touch-area" id="touchArea"></div>
+    </div>
+    
+    <!-- Legend -->
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-color vehicle-color"></div>
+        <div>Vehicle</div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color pedestrian-color"></div>
+        <div>Pedestrian</div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Touch-friendly interactive display
+    const touchArea = document.getElementById('touchArea');
+    const valueDisplay = document.getElementById('valueDisplay');
+    const vehicleValueEl = document.querySelector('.vehicle-value');
+    const pedestrianValueEl = document.querySelector('.pedestrian-value');
+    const monthValueEl = document.querySelector('.month-value');
+    const touchIndicator = document.getElementById('touchIndicator');
+    const verticalIndicator = document.getElementById('verticalIndicator');
+    
+    // Data points for the chart (x positions in percentage, y values)
+    const vehicleData = [
+      { x: 0, y: 75 },
+      { x: 12.5, y: 70 },
+      { x: 25, y: 35 },
+      { x: 37.5, y: 70 },
+      { x: 50, y: 60 },
+      { x: 62.5, y: 50 },
+      { x: 75, y: 40 },
+      { x: 87.5, y: 60 },
+      { x: 100, y: 65 }
+    ];
+    
+    const pedestrianData = [
+      { x: 0, y: 55 },
+      { x: 12.5, y: 20 },
+      { x: 25, y: 25 },
+      { x: 37.5, y: 60 },
+      { x: 50, y: 85 },
+      { x: 62.5, y: 50 },
+      { x: 75, y: 85 },
+      { x: 87.5, y: 40 },
+      { x: 100, y: 35 }
+    ];
+    
+    // Function to interpolate values between data points
+    function interpolateValue(data, xPercent) {
+      // Find the two data points that surround the x position
+      let lowerPoint = data[0];
+      let upperPoint = data[data.length - 1];
+      
+      for (let i = 0; i < data.length - 1; i++) {
+        if (data[i].x <= xPercent && data[i + 1].x >= xPercent) {
+          lowerPoint = data[i];
+          upperPoint = data[i + 1];
+          break;
+        }
+      }
+      
+      // If x is exactly on a data point, return that value
+      if (lowerPoint.x === xPercent) return lowerPoint.y;
+      if (upperPoint.x === xPercent) return upperPoint.y;
+      
+      // Otherwise interpolate
+      const xRange = upperPoint.x - lowerPoint.x;
+      const yRange = upperPoint.y - lowerPoint.y;
+      const xRatio = (xPercent - lowerPoint.x) / xRange;
+      
+      return Math.round(lowerPoint.y + (xRatio * yRange));
+    }
+    
+    // Function to get month based on x position
+    function getMonth(xPercent) {
+      if (xPercent < 12.5) return "May";
+      else if (xPercent < 37.5) return "June";
+      else if (xPercent < 62.5) return "July";
+      else if (xPercent < 87.5) return "August";
+      else return "September";
+    }
+    
+    // Function to handle touch/click events
+    function handleInteraction(e) {
+      e.preventDefault(); // Prevent default behavior
+      
+      // Get coordinates (handle both touch and mouse events)
+      const rect = touchArea.getBoundingClientRect();
+      let clientX, clientY;
+      
+      if (e.type === 'touchstart' || e.type === 'touchmove') {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+      }
+      
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      const xPercent = (x / rect.width) * 100;
+      
+      // Get interpolated values
+      const vehicleValue = interpolateValue(vehicleData, xPercent);
+      const pedestrianValue = interpolateValue(pedestrianData, xPercent);
+      const month = getMonth(xPercent);
+      
+      // Update value display
+      vehicleValueEl.textContent = vehicleValue;
+      pedestrianValueEl.textContent = pedestrianValue;
+      monthValueEl.textContent = month;
+      
+      // Show value display
+      valueDisplay.style.opacity = '1';
+      
+      // Show and position touch indicator
+      touchIndicator.style.opacity = '1';
+      touchIndicator.style.left = `${x}px`;
+      touchIndicator.style.top = `${y}px`;
+      
+      // Show and position vertical indicator
+      verticalIndicator.style.opacity = '1';
+      verticalIndicator.style.left = `${x}px`;
+    }
+    
+    // Function to hide value display
+    function hideValueDisplay() {
+      valueDisplay.style.opacity = '0';
+      touchIndicator.style.opacity = '0';
+      verticalIndicator.style.opacity = '0';
+    }
+    
+    // Add event listeners for both touch and mouse events
+    touchArea.addEventListener('touchstart', handleInteraction);
+    touchArea.addEventListener('touchmove', handleInteraction);
+    touchArea.addEventListener('mousedown', handleInteraction);
+    touchArea.addEventListener('mousemove', function(e) {
+      // Only show indicators on mouse move if mouse button is pressed
+      if (e.buttons === 1) {
+        handleInteraction(e);
+      }
+    });
+    
+    // Add event listeners to hide indicators when touch/click ends
+    document.addEventListener('touchend', function() {
+      // Don't hide value display on touch end for better mobile UX
+      touchIndicator.style.opacity = '0';
+      verticalIndicator.style.opacity = '0';
+    });
+    
+    document.addEventListener('mouseup', function() {
+      // Don't hide value display on mouse up for better UX
+      touchIndicator.style.opacity = '0';
+      verticalIndicator.style.opacity = '0';
+    });
+  </script>
+</body>
+</html>

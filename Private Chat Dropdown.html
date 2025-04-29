@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HMI Dropdown</title>
+  <!-- Import Inter font -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <style>
+    :root {
+      --dropdown-bg: #f8f9fa;
+      --dropdown-text: #000;
+      --dropdown-border: transparent;
+      --dropdown-hover: #f0f1f2;
+      --dropdown-active: #e9ecef;
+      --dropdown-focus: rgba(66, 133, 244, 0.2);
+      --dropdown-arrow: #4285f4;
+      --dropdown-arrow-hover: #3367d6;
+      --border-radius: 16px;
+      --option-border-radius: 8px;
+      --shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      --dropdown-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #ffffff;
+      padding: 20px;
+      gap: 40px;
+    }
+    
+    .size-controls {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .size-button {
+      padding: 10px 15px;
+      background-color: #f0f1f2;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .size-button.active {
+      background-color: #4285f4;
+      color: white;
+    }
+    
+    /* Dropdown container */
+    .dropdown-container {
+      position: relative;
+      width: 300px;
+    }
+    
+    /* Dropdown select button */
+    .dropdown-select {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      height: 70px;
+      padding: 0 20px;
+      background-color: var(--dropdown-bg);
+      border: 1px solid var(--dropdown-border);
+      border-radius: var(--border-radius);
+      font-family: 'Inter', sans-serif;
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--dropdown-text);
+      cursor: pointer;
+      user-select: none;
+      box-shadow: var(--shadow);
+      transition: background-color 0.2s, box-shadow 0.2s;
+    }
+    
+    .dropdown-select:hover {
+      background-color: var(--dropdown-hover);
+    }
+    
+    .dropdown-select:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px var(--dropdown-focus);
+    }
+    
+    /* Dropdown arrow */
+    .dropdown-arrow {
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-top: 10px solid var(--dropdown-arrow);
+      transition: transform 0.2s, border-top-color 0.2s;
+    }
+    
+    .dropdown-select:hover .dropdown-arrow {
+      border-top-color: var(--dropdown-arrow-hover);
+    }
+    
+    .dropdown-select.open .dropdown-arrow {
+      transform: rotate(180deg);
+    }
+    
+    /* Dropdown options */
+    .dropdown-options {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      width: 100%;
+      max-height: 0;
+      overflow: hidden;
+      background-color: var(--dropdown-bg);
+      border-radius: var(--border-radius);
+      box-shadow: var(--dropdown-shadow);
+      z-index: 10;
+      opacity: 0;
+      transition: max-height 0.3s, opacity 0.2s;
+    }
+    
+    .dropdown-options.open {
+      max-height: 300px;
+      opacity: 1;
+      overflow-y: auto;
+    }
+    
+    /* Dropdown option */
+    .dropdown-option {
+      padding: 15px 20px;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--dropdown-text);
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .dropdown-option:hover {
+      background-color: var(--dropdown-hover);
+    }
+    
+    .dropdown-option:active {
+      background-color: var(--dropdown-active);
+    }
+    
+    .dropdown-option:first-child {
+      border-top-left-radius: var(--option-border-radius);
+      border-top-right-radius: var(--option-border-radius);
+    }
+    
+    .dropdown-option:last-child {
+      border-bottom-left-radius: var(--option-border-radius);
+      border-bottom-right-radius: var(--option-border-radius);
+    }
+    
+    .dropdown-option.selected {
+      background-color: rgba(66, 133, 244, 0.1);
+      font-weight: 600;
+    }
+    
+    /* Size variants */
+    /* Small */
+    .dropdown-container.small .dropdown-select {
+      height: 50px;
+      font-size: 16px;
+      padding: 0 15px;
+    }
+    
+    .dropdown-container.small .dropdown-arrow {
+      border-left-width: 8px;
+      border-right-width: 8px;
+      border-top-width: 8px;
+    }
+    
+    .dropdown-container.small .dropdown-option {
+      padding: 12px 15px;
+      font-size: 14px;
+    }
+    
+    /* Medium - default */
+    .dropdown-container.medium .dropdown-select {
+      height: 70px;
+    }
+    
+    /* Large */
+    .dropdown-container.large .dropdown-select {
+      height: 90px;
+      font-size: 22px;
+      padding: 0 25px;
+    }
+    
+    .dropdown-container.large .dropdown-arrow {
+      border-left-width: 12px;
+      border-right-width: 12px;
+      border-top-width: 12px;
+    }
+    
+    .dropdown-container.large .dropdown-option {
+      padding: 18px 25px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="size-controls">
+    <button class="size-button active" data-size="medium">Medium</button>
+    <button class="size-button" data-size="small">Small</button>
+    <button class="size-button" data-size="large">Large</button>
+  </div>
+  
+  <div class="dropdown-container medium" id="dropdown">
+    <button class="dropdown-select" id="dropdownSelect" aria-haspopup="listbox" aria-expanded="false">
+      <span id="selectedOption">Select an option</span>
+      <div class="dropdown-arrow"></div>
+    </button>
+    <div class="dropdown-options" id="dropdownOptions" role="listbox">
+      <div class="dropdown-option" role="option" data-value="option1">Temperature</div>
+      <div class="dropdown-option" role="option" data-value="option2">Pressure</div>
+      <div class="dropdown-option" role="option" data-value="option3">Flow Rate</div>
+      <div class="dropdown-option" role="option" data-value="option4">Voltage</div>
+      <div class="dropdown-option" role="option" data-value="option5">Current</div>
+      <div class="dropdown-option" role="option" data-value="option6">Power</div>
+      <div class="dropdown-option" role="option" data-value="option7">Frequency</div>
+    </div>
+  </div>
+  
+  <script>
+    // Get elements
+    const dropdown = document.getElementById('dropdown');
+    const dropdownSelect = document.getElementById('dropdownSelect');
+    const dropdownOptions = document.getElementById('dropdownOptions');
+    const options = document.querySelectorAll('.dropdown-option');
+    const selectedOptionText = document.getElementById('selectedOption');
+    const sizeButtons = document.querySelectorAll('.size-button');
+    
+    // Toggle dropdown
+    dropdownSelect.addEventListener('click', function() {
+      const isOpen = dropdownOptions.classList.contains('open');
+      
+      // Toggle open class
+      dropdownOptions.classList.toggle('open');
+      dropdownSelect.classList.toggle('open');
+      
+      // Update aria-expanded
+      dropdownSelect.setAttribute('aria-expanded', !isOpen);
+      
+      // Provide tactile feedback if available
+      if (window.navigator.vibrate) {
+        window.navigator.vibrate(50);
+      }
+    });
+    
+    // Select option
+    options.forEach(option => {
+      option.addEventListener('click', function() {
+        // Get selected value and text
+        const value = this.getAttribute('data-value');
+        const text = this.textContent;
+        
+        // Update selected option
+        selectedOptionText.textContent = text;
+        
+        // Remove selected class from all options
+        options.forEach(opt => opt.classList.remove('selected'));
+        
+        // Add selected class to clicked option
+        this.classList.add('selected');
+        
+        // Close dropdown
+        dropdownOptions.classList.remove('open');
+        dropdownSelect.classList.remove('open');
+        dropdownSelect.setAttribute('aria-expanded', 'false');
+        
+        // Provide tactile feedback if available
+        if (window.navigator.vibrate) {
+          window.navigator.vibrate(50);
+        }
+        
+        // Custom event for value change
+        const event = new CustomEvent('change', {
+          detail: { value, text }
+        });
+        dropdown.dispatchEvent(event);
+      });
+      
+      // Keyboard navigation
+      option.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          this.click();
+        }
+      });
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!dropdown.contains(e.target)) {
+        dropdownOptions.classList.remove('open');
+        dropdownSelect.classList.remove('open');
+        dropdownSelect.setAttribute('aria-expanded', 'false');
+      }
+    });
+    
+    // Size variant buttons
+    sizeButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        // Remove active class from all buttons
+        sizeButtons.forEach(btn => btn.classList.remove('active'));
+        
+        // Add active class to clicked button
+        this.classList.add('active');
+        
+        // Get size value
+        const size = this.getAttribute('data-size');
+        
+        // Remove all size classes from dropdown
+        dropdown.classList.remove('small', 'medium', 'large');
+        
+        // Add the selected size class
+        dropdown.classList.add(size);
+      });
+    });
+    
+    // Keyboard navigation
+    dropdownSelect.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        
+        if (!dropdownOptions.classList.contains('open')) {
+          // Open dropdown
+          dropdownOptions.classList.add('open');
+          dropdownSelect.classList.add('open');
+          dropdownSelect.setAttribute('aria-expanded', 'true');
+          
+          // Focus first option
+          if (options.length > 0) {
+            options[0].focus();
+          }
+        }
+      }
+    });
+    
+    // Touch events for better mobile experience
+    let touchStartY = 0;
+    let touchEndY = 0;
+    
+    dropdownSelect.addEventListener('touchstart', function(e) {
+      touchStartY = e.changedTouches[0].screenY;
+    });
+    
+    dropdownSelect.addEventListener('touchend', function(e) {
+      touchEndY = e.changedTouches[0].screenY;
+      
+      // If it's a tap (not a swipe), toggle dropdown
+      if (Math.abs(touchStartY - touchEndY) < 10) {
+        this.click();
+      }
+    });
+    
+    // Example of listening for change event
+    dropdown.addEventListener('change', function(e) {
+      console.log('Selected value:', e.detail.value);
+      console.log('Selected text:', e.detail.text);
+    });
+  </script>
+</body>
+</html>

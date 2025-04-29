@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level Indicator</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: white;
+        }
+
+        .level-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .level-bar {
+            position: relative;
+            width: 100px;
+            height: 400px;
+            background-color: #e6f0ff;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .level-fill {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 80%;  /* 80 out of 100 */
+            background-color: #4285f4;
+            border-radius: 0 0 16px 16px;
+            transition: height 1s ease;
+        }
+
+        .level-value {
+            position: absolute;
+            bottom: 30px;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-size: 48px;
+            font-weight: bold;
+        }
+
+        .level-markers {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 400px;
+            color: #4a6584;
+            font-size: 28px;
+            font-weight: 500;
+        }
+
+        .marker {
+            padding: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="level-container">
+        <div class="level-bar">
+            <div class="level-fill">
+                <div class="level-value">80</div>
+            </div>
+        </div>
+        <div class="level-markers">
+            <div class="marker">100</div>
+            <div class="marker">75</div>
+            <div class="marker">50</div>
+            <div class="marker">25</div>
+            <div class="marker">0</div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Radio Button with Animations</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: white;
+        }
+
+        .container {
+            border: 2px dashed #9747ff;
+            border-radius: 16px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .radio-wrapper {
+            display: flex;
+            align-items: center;
+            position: relative;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+
+        .radio-wrapper.disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Hide the default radio button */
+        .radio-input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+        /* Create a custom radio button */
+        .radio-custom {
+            position: relative;
+            height: 24px;
+            width: 24px;
+            background-color: white;
+            border: 1px solid #ced4da;
+            border-radius: 50%;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: center;
+        }
+
+        /* When the radio button is checked */
+        .radio-input:checked ~ .radio-custom {
+            background-color: #4285f4;
+            border-color: #4285f4;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Create the inner circle (hidden when not checked) */
+        .radio-dot {
+            width: 0;
+            height: 0;
+            background-color: white;
+            border-radius: 50%;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: scale(0);
+        }
+
+        /* Show the inner circle when checked */
+        .radio-input:checked ~ .radio-custom .radio-dot {
+            width: 8px;
+            height: 8px;
+            opacity: 1;
+            transform: scale(1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.1s;
+        }
+
+        /* Style the radio button text */
+        .radio-text {
+            font-size: 16px;
+            color: #000000;
+            transition: color 0.3s ease;
+        }
+
+        /* Style for focus state */
+        .radio-input:focus ~ .radio-custom {
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0);
+            transition: box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .radio-input:focus-visible ~ .radio-custom {
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.3);
+        }
+
+        /* Style for disabled state */
+        .radio-wrapper.disabled .radio-custom {
+            background-color: #f8f8f8;
+            border-color: #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        /* Style for disabled checked state */
+        .radio-wrapper.disabled .radio-input:checked ~ .radio-custom {
+            background-color: #a4b4f4;
+            border-color: #a4b4f4;
+            transition: all 0.3s ease;
+        }
+
+        /* Style for disabled text */
+        .radio-wrapper.disabled .radio-text {
+            color: #6c757d;
+            transition: color 0.3s ease;
+        }
+
+        /* Hover effect */
+        .radio-wrapper:not(.disabled):hover .radio-custom {
+            border-color: #adb5bd;
+            transform: scale(1.05);
+            transition: all 0.2s ease;
+        }
+
+        .radio-input:checked ~ .radio-custom:hover {
+            background-color: #3b78e7;
+            transform: scale(1.05);
+        }
+
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .state-indicator {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* Button animations */
+        button {
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #f0f0f0;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Single radio button that will change states -->
+        <label id="radioWrapper" class="radio-wrapper">
+            <input id="radio" type="radio" name="demo" class="radio-input">
+            <span class="radio-custom">
+                <span class="radio-dot"></span>
+            </span>
+            <span class="radio-text">Radio Button Text</span>
+        </label>
+    </div>
+
+    <div class="controls">
+        <button onclick="setUnchecked()">Unchecked</button>
+        <button onclick="setChecked()">Checked</button>
+        <button onclick="setDisabledUnchecked()">Disabled (Unchecked)</button>
+        <button onclick="setDisabledChecked()">Disabled (Checked)</button>
+        <button onclick="setFocus()">Focus</button>
+    </div>
+
+    <div class="state-indicator" id="stateText">
+        Current state: Unchecked
+    </div>
+
+    <script>
+        const radio = document.getElementById('radio');
+        const radioWrapper = document.getElementById('radioWrapper');
+        const stateText = document.getElementById('stateText');
+
+        function updateStateText() {
+            let state = radio.checked ? 'Checked' : 'Unchecked';
+            if (radio.disabled) {
+                state += ' (Disabled)';
+            }
+            stateText.textContent = `Current state: ${state}`;
+        }
+
+        function setUnchecked() {
+            radio.checked = false;
+            radio.disabled = false;
+            radioWrapper.classList.remove('disabled');
+            updateStateText();
+        }
+
+        function setChecked() {
+            radio.checked = true;
+            radio.disabled = false;
+            radioWrapper.classList.remove('disabled');
+            updateStateText();
+        }
+
+        function setDisabledUnchecked() {
+            radio.checked = false;
+            radio.disabled = true;
+            radioWrapper.classList.add('disabled');
+            updateStateText();
+        }
+
+        function setDisabledChecked() {
+            radio.checked = true;
+            radio.disabled = true;
+            radioWrapper.classList.add('disabled');
+            updateStateText();
+        }
+
+        function setFocus() {
+            radio.disabled = false;
+            radioWrapper.classList.remove('disabled');
+            radio.focus();
+            stateText.textContent = 'Current state: Focus';
+        }
+
+        // Add event listeners to update state text
+        radio.addEventListener('change', updateStateText);
+        radio.addEventListener('focus', function() {
+            if (!radio.disabled) {
+                stateText.textContent = 'Current state: Focus';
+            }
+        });
+        radio.addEventListener('blur', updateStateText);
+
+        // Initialize state text
+        updateStateText();
+    </script>
+</body>
+</html>

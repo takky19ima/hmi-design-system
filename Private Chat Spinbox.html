@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HMI Spinbox</title>
+  <!-- Import Inter font -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <style>
+    :root {
+      --spinbox-bg: #f8f9fa;
+      --spinbox-text: #000;
+      --arrow-color: #4285f4;
+      --arrow-hover: #3367d6;
+      --border-radius: 16px;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #ffffff;
+      padding: 20px;
+      gap: 40px;
+    }
+    
+    .spinbox-container {
+      position: relative;
+      width: 300px;
+      height: 70px;
+      background-color: var(--spinbox-bg);
+      border-radius: var(--border-radius);
+      display: flex;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    
+    .spinbox-value {
+      flex: 1;
+      font-size: 40px;
+      font-weight: 600;
+      padding: 0 20px;
+      color: var(--spinbox-text);
+      border: none;
+      background: transparent;
+      text-align: left;
+      width: 100%;
+      outline: none;
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .spinbox-controls {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      padding-right: 15px;
+    }
+    
+    .spinbox-button {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 35px;
+      width: 35px;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    .spinbox-button:focus {
+      outline: none;
+    }
+    
+    .triangle-up {
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-bottom: 10px solid var(--arrow-color);
+      transition: border-bottom-color 0.2s, transform 0.2s;
+    }
+    
+    .triangle-down {
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-top: 10px solid var(--arrow-color);
+      transition: border-top-color 0.2s, transform 0.2s;
+    }
+    
+    .spinbox-button:hover .triangle-up {
+      border-bottom-color: var(--arrow-hover);
+    }
+    
+    .spinbox-button:hover .triangle-down {
+      border-top-color: var(--arrow-hover);
+    }
+    
+    .spinbox-button:active .triangle-up,
+    .spinbox-button:active .triangle-down {
+      transform: scale(0.9);
+    }
+    
+    /* Size variant controls */
+    .size-controls {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .size-button {
+      padding: 10px 15px;
+      background-color: #f0f1f2;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .size-button.active {
+      background-color: #4285f4;
+      color: white;
+    }
+    
+    /* Size variants */
+    .spinbox-container.small {
+      width: 200px;
+      height: 50px;
+    }
+    
+    .spinbox-container.small .spinbox-value {
+      font-size: 28px;
+    }
+    
+    .spinbox-container.small .spinbox-button {
+      height: 25px;
+      width: 25px;
+    }
+    
+    .spinbox-container.small .triangle-up {
+      border-left-width: 8px;
+      border-right-width: 8px;
+      border-bottom-width: 8px;
+    }
+    
+    .spinbox-container.small .triangle-down {
+      border-left-width: 8px;
+      border-right-width: 8px;
+      border-top-width: 8px;
+    }
+    
+    .spinbox-container.medium {
+      width: 300px;
+      height: 70px;
+    }
+    
+    .spinbox-container.large {
+      width: 400px;
+      height: 90px;
+    }
+    
+    .spinbox-container.large .spinbox-value {
+      font-size: 48px;
+    }
+    
+    .spinbox-container.large .spinbox-button {
+      height: 45px;
+      width: 45px;
+    }
+    
+    .spinbox-container.large .triangle-up {
+      border-left-width: 12px;
+      border-right-width: 12px;
+      border-bottom-width: 12px;
+    }
+    
+    .spinbox-container.large .triangle-down {
+      border-left-width: 12px;
+      border-right-width: 12px;
+      border-top-width: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="size-controls">
+    <button class="size-button active" data-size="medium">Medium</button>
+    <button class="size-button" data-size="small">Small</button>
+    <button class="size-button" data-size="large">Large</button>
+  </div>
+  
+  <!-- Spinbox with both arrows -->
+  <div class="spinbox-container medium" id="spinbox">
+    <input type="text" class="spinbox-value" value="1256" id="spinboxValue" inputmode="numeric" pattern="[0-9]*">
+    <div class="spinbox-controls">
+      <button class="spinbox-button" id="incrementBtn" aria-label="Increment">
+        <div class="triangle-up"></div>
+      </button>
+      <button class="spinbox-button" id="decrementBtn" aria-label="Decrement">
+        <div class="triangle-down"></div>
+      </button>
+    </div>
+  </div>
+  
+  <script>
+    // Get elements
+    const spinbox = document.getElementById('spinbox');
+    const spinboxValue = document.getElementById('spinboxValue');
+    const incrementBtn = document.getElementById('incrementBtn');
+    const decrementBtn = document.getElementById('decrementBtn');
+    const sizeButtons = document.querySelectorAll('.size-button');
+    
+    // Set min and max values
+    const minValue = 0;
+    const maxValue = 9999;
+    
+    // Increment function
+    function increment() {
+      let value = parseInt(spinboxValue.value, 10);
+      if (isNaN(value)) value = 0;
+      value = Math.min(value + 1, maxValue);
+      spinboxValue.value = value;
+      
+      // Provide tactile feedback if available
+      if (window.navigator.vibrate) {
+        window.navigator.vibrate(50);
+      }
+    }
+    
+    // Decrement function
+    function decrement() {
+      let value = parseInt(spinboxValue.value, 10);
+      if (isNaN(value)) value = 0;
+      value = Math.max(value - 1, minValue);
+      spinboxValue.value = value;
+      
+      // Provide tactile feedback if available
+      if (window.navigator.vibrate) {
+        window.navigator.vibrate(50);
+      }
+    }
+    
+    // Add event listeners
+    incrementBtn.addEventListener('click', increment);
+    decrementBtn.addEventListener('click', decrement);
+    
+    // Handle input validation
+    spinboxValue.addEventListener('input', function() {
+      // Remove non-numeric characters
+      this.value = this.value.replace(/[^0-9]/g, '');
+      
+      // Ensure value is within range
+      let value = parseInt(this.value, 10);
+      if (!isNaN(value)) {
+        if (value > maxValue) this.value = maxValue;
+        if (value < minValue) this.value = minValue;
+      }
+    });
+    
+    // Handle blur event to ensure empty input gets default value
+    spinboxValue.addEventListener('blur', function() {
+      if (this.value === '' || isNaN(parseInt(this.value, 10))) {
+        this.value = minValue;
+      }
+    });
+    
+    // Size variant buttons
+    sizeButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        // Remove active class from all buttons
+        sizeButtons.forEach(btn => btn.classList.remove('active'));
+        
+        // Add active class to clicked button
+        this.classList.add('active');
+        
+        // Get size value
+        const size = this.getAttribute('data-size');
+        
+        // Remove all size classes from spinbox
+        spinbox.classList.remove('small', 'medium', 'large');
+        
+        // Add the selected size class
+        spinbox.classList.add(size);
+      });
+    });
+    
+    // Touch events for better mobile experience
+    let touchStartY = 0;
+    let touchEndY = 0;
+    
+    spinboxValue.addEventListener('touchstart', function(e) {
+      touchStartY = e.changedTouches[0].screenY;
+    });
+    
+    spinboxValue.addEventListener('touchend', function(e) {
+      touchEndY = e.changedTouches[0].screenY;
+      handleSwipe();
+    });
+    
+    function handleSwipe() {
+      const swipeDistance = touchStartY - touchEndY;
+      if (Math.abs(swipeDistance) > 30) {
+        if (swipeDistance > 0) {
+          increment();
+        } else {
+          decrement();
+        }
+      }
+    }
+    
+    // Long press functionality for continuous increment/decrement
+    let incrementInterval;
+    let decrementInterval;
+    const initialDelay = 500; // ms before starting continuous increment/decrement
+    const intervalSpeed = 100; // ms between increments/decrements
+    
+    incrementBtn.addEventListener('mousedown', function() {
+      increment(); // Immediate first increment
+      incrementInterval = setTimeout(function() {
+        incrementInterval = setInterval(increment, intervalSpeed);
+      }, initialDelay);
+    });
+    
+    decrementBtn.addEventListener('mousedown', function() {
+      decrement(); // Immediate first decrement
+      decrementInterval = setTimeout(function() {
+        decrementInterval = setInterval(decrement, intervalSpeed);
+      }, initialDelay);
+    });
+    
+    // Clear intervals on mouse up or leave
+    function clearIncrementInterval() {
+      clearTimeout(incrementInterval);
+      clearInterval(incrementInterval);
+    }
+    
+    function clearDecrementInterval() {
+      clearTimeout(decrementInterval);
+      clearInterval(decrementInterval);
+    }
+    
+    incrementBtn.addEventListener('mouseup', clearIncrementInterval);
+    incrementBtn.addEventListener('mouseleave', clearIncrementInterval);
+    decrementBtn.addEventListener('mouseup', clearDecrementInterval);
+    decrementBtn.addEventListener('mouseleave', clearDecrementInterval);
+    
+    // Touch support for long press
+    incrementBtn.addEventListener('touchstart', function(e) {
+      e.preventDefault();
+      increment();
+      incrementInterval = setTimeout(function() {
+        incrementInterval = setInterval(increment, intervalSpeed);
+      }, initialDelay);
+    });
+    
+    decrementBtn.addEventListener('touchstart', function(e) {
+      e.preventDefault();
+      decrement();
+      decrementInterval = setTimeout(function() {
+        decrementInterval = setInterval(decrement, intervalSpeed);
+      }, initialDelay);
+    });
+    
+    incrementBtn.addEventListener('touchend', clearIncrementInterval);
+    decrementBtn.addEventListener('touchend', clearDecrementInterval);
+  </script>
+</body>
+</html>

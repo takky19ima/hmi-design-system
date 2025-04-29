@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trend Visualization</title>
+<!-- Add Inter font -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        background-color: white;
+        color: #4a5568;
+    }
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        max-width: 800px;
+        width: 100%;
+        padding: 20px;
+    }
+
+    .trend-container {
+        position: relative;
+        width: 100%;
+        height: 200px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+
+    svg {
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+    }
+
+    .grid-line {
+        stroke: #e2e8f0;
+        stroke-width: 1;
+    }
+
+    .trend-line {
+        fill: none;
+        stroke: #4285f4;
+        stroke-width: 2;
+        stroke-linejoin: round;
+        stroke-linecap: round;
+    }
+
+    .trend-area {
+        fill: url(#areaGradient);
+        opacity: 0.5;
+    }
+
+    .axis-label {
+        font-size: 14px;
+        fill: #9ca3af;
+        font-weight: 500;
+    }
+
+    .controls {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        width: 100%;
+        max-width: 600px;
+        padding: 20px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+    }
+
+    .control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .control-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    label {
+        font-size: 14px;
+        font-weight: 500;
+        min-width: 100px;
+    }
+
+    input, select {
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: 'Inter', sans-serif;
+    }
+
+    input:focus, select:focus {
+        outline: none;
+        border-color: #4285f4;
+        box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+    }
+
+    button {
+        padding: 8px 16px;
+        font-size: 14px;
+        cursor: pointer;
+        background-color: #4285f4;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+        font-family: 'Inter', sans-serif;
+    }
+
+    button:hover {
+        background-color: #3b78e7;
+    }
+
+    button:active {
+        transform: scale(0.98);
+    }
+
+    .data-points {
+        width: 100%;
+        height: 100px;
+        resize: vertical;
+        font-family: monospace;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    .time-period {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .time-period input {
+        width: 100px;
+    }
+
+    .tooltip {
+        position: absolute;
+        background-color: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 4px;
+        padding: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s;
+        font-size: 12px;
+    }
+
+    .data-point {
+        fill: #4285f4;
+        stroke: white;
+        stroke-width: 2;
+        cursor: pointer;
+    }
+
+    .data-point:hover {
+        fill: #3b78e7;
+        r: 5;
+    }
+
+    .average-line {
+        stroke: #9ca3af;
+        stroke-width: 1;
+        stroke-dasharray: 4 2;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <h2>Trend Visualization</h2>
+    
+    <div class="trend-container">
+        <svg id="trend-svg" viewBox="0 0 700 200">
+            <defs>
+                <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#4285f4" stop-opacity="0.5" />
+                    <stop offset="100%" stop-color="#4285f4" stop-opacity="0" />
+                </linearGradient>
+            </defs>
+            <!-- Grid lines and axes will be added by JavaScript -->
+            <g id="grid-lines"></g>
+            <g id="data-visualization">
+                <path id="trend-area" class="trend-area"></path>
+                <path id="trend-line" class="trend-line"></path>
+                <g id="data-points"></g>
+            </g>
+            <g id="axes-labels"></g>
+            <line id="average-line" class="average-line"></line>
+        </svg>
+        <div id="tooltip" class="tooltip"></div>
+    </div>
+    
+    <div class="controls">
+        <div class="control-group">
+            <label for="data-points">Data Points (comma-separated values)</label>
+            <textarea id="data-points" class="data-points">60, 40, 30, 45, 55, 40, 50, 70, 90, 75, 65</textarea>
+        </div>
+        
+        <div class="control-group">
+            <div class="control-row">
+                <label for="min-value">Y-Axis Range</label>
+                <input type="number" id="min-value" value="0" placeholder="Min">
+                <span>to</span>
+                <input type="number" id="max-value" value="100" placeholder="Max">
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <div class="control-row time-period">
+                <label>Time Period</label>
+                <input type="text" id="start-label" value="Start" placeholder="Start Label">
+                <span>to</span>
+                <input type="text" id="end-label" value="End" placeholder="End Label">
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <div class="control-row">
+                <label for="grid-lines">Grid Lines</label>
+                <input type="number" id="grid-lines" value="5" min="2" max="10">
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <div class="control-row">
+                <label for="show-average">Show Average</label>
+                <input type="checkbox" id="show-average" checked>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <button id="update-chart">Update Chart</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    class TrendVisualization {
+        constructor(options) {
+            this.svg = document.getElementById(options.svgId || 'trend-svg');
+            this.trendLine = document.getElementById('trend-line');
+            this.trendArea = document.getElementById('trend-area');
+            this.gridLinesGroup = document.getElementById('grid-lines');
+            this.axesLabelsGroup = document.getElementById('axes-labels');
+            this.dataPointsGroup = document.getElementById('data-points');
+            this.averageLine = document.getElementById('average-line');
+            this.tooltip = document.getElementById('tooltip');
+            
+            // Default options
+            this.options = {
+                data: options.data || [60, 40, 30, 45, 55, 40, 50, 70, 90, 75, 65],
+                minValue: options.minValue || 0,
+                maxValue: options.maxValue || 100,
+                startLabel: options.startLabel || 'Start',
+                endLabel: options.endLabel || 'End',
+                gridLines: options.gridLines || 5,
+                showAverage: options.showAverage !== undefined ? options.showAverage : true,
+                padding: { top: 20, right: 20, bottom: 30, left: 40 }
+            };
+            
+            // Calculate dimensions
+            this.updateDimensions();
+            
+            // Initialize the chart
+            this.render();
+            
+            // Add window resize listener
+            window.addEventListener('resize', () => {
+                this.updateDimensions();
+                this.render();
+            });
+        }
+        
+        updateDimensions() {
+            const rect = this.svg.getBoundingClientRect();
+            this.width = rect.width;
+            this.height = rect.height;
+            this.innerWidth = this.width - this.options.padding.left - this.options.padding.right;
+            this.innerHeight = this.height - this.options.padding.top - this.options.padding.bottom;
+        }
+        
+        updateOptions(options) {
+            this.options = { ...this.options, ...options };
+            this.render();
+        }
+        
+        calculateAverage() {
+            return this.options.data.reduce((sum, value) => sum + value, 0) / this.options.data.length;
+        }
+        
+        render() {
+            this.renderGridLines();
+            this.renderAxesLabels();
+            this.renderTrendLine();
+            this.renderDataPoints();
+            this.renderAverageLine();
+        }
+        
+        renderGridLines() {
+            this.gridLinesGroup.innerHTML = '';
+            
+            // Vertical grid lines
+            const numVerticalLines = this.options.gridLines;
+            const verticalSpacing = this.innerWidth / (numVerticalLines - 1);
+            
+            for (let i = 0; i < numVerticalLines; i++) {
+                const x = this.options.padding.left + i * verticalSpacing;
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('class', 'grid-line');
+                line.setAttribute('x1', x);
+                line.setAttribute('y1', this.options.padding.top);
+                line.setAttribute('x2', x);
+                line.setAttribute('y2', this.height - this.options.padding.bottom);
+                this.gridLinesGroup.appendChild(line);
+            }
+            
+            // Horizontal grid lines (just top and bottom)
+            const topLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            topLine.setAttribute('class', 'grid-line');
+            topLine.setAttribute('x1', this.options.padding.left);
+            topLine.setAttribute('y1', this.options.padding.top);
+            topLine.setAttribute('x2', this.width - this.options.padding.right);
+            topLine.setAttribute('y2', this.options.padding.top);
+            this.gridLinesGroup.appendChild(topLine);
+            
+            const bottomLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            bottomLine.setAttribute('class', 'grid-line');
+            bottomLine.setAttribute('x1', this.options.padding.left);
+            bottomLine.setAttribute('y1', this.height - this.options.padding.bottom);
+            bottomLine.setAttribute('x2', this.width - this.options.padding.right);
+            bottomLine.setAttribute('y2', this.height - this.options.padding.bottom);
+            this.gridLinesGroup.appendChild(bottomLine);
+        }
+        
+        renderAxesLabels() {
+            this.axesLabelsGroup.innerHTML = '';
+            
+            // X-axis labels (Start and End)
+            const startLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            startLabel.setAttribute('class', 'axis-label');
+            startLabel.setAttribute('x', this.options.padding.left);
+            startLabel.setAttribute('y', this.height - 10);
+            startLabel.textContent = this.options.startLabel;
+            this.axesLabelsGroup.appendChild(startLabel);
+            
+            const endLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            endLabel.setAttribute('class', 'axis-label');
+            endLabel.setAttribute('x', this.width - this.options.padding.right);
+            endLabel.setAttribute('y', this.height - 10);
+            endLabel.setAttribute('text-anchor', 'end');
+            endLabel.textContent = this.options.endLabel;
+            this.axesLabelsGroup.appendChild(endLabel);
+            
+            // Y-axis labels (Min, Max, and Average)
+            const minLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            minLabel.setAttribute('class', 'axis-label');
+            minLabel.setAttribute('x', this.width - this.options.padding.right + 10);
+            minLabel.setAttribute('y', this.height - this.options.padding.bottom);
+            minLabel.setAttribute('text-anchor', 'start');
+            minLabel.setAttribute('dominant-baseline', 'middle');
+            minLabel.textContent = this.options.minValue;
+            this.axesLabelsGroup.appendChild(minLabel);
+            
+            const maxLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            maxLabel.setAttribute('class', 'axis-label');
+            maxLabel.setAttribute('x', this.width - this.options.padding.right + 10);
+            maxLabel.setAttribute('y', this.options.padding.top);
+            maxLabel.setAttribute('text-anchor', 'start');
+            maxLabel.setAttribute('dominant-baseline', 'middle');
+            maxLabel.textContent = this.options.maxValue;
+            this.axesLabelsGroup.appendChild(maxLabel);
+            
+            if (this.options.showAverage) {
+                const average = this.calculateAverage();
+                const averageY = this.getYPosition(average);
+                
+                const averageLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                averageLabel.setAttribute('class', 'axis-label');
+                averageLabel.setAttribute('x', this.width - this.options.padding.right + 10);
+                averageLabel.setAttribute('y', averageY);
+                averageLabel.setAttribute('text-anchor', 'start');
+                averageLabel.setAttribute('dominant-baseline', 'middle');
+                averageLabel.textContent = 'AVERAGE';
+                this.axesLabelsGroup.appendChild(averageLabel);
+            }
+        }
+        
+        getYPosition(value) {
+            const range = this.options.maxValue - this.options.minValue;
+            const percentage = (value - this.options.minValue) / range;
+            return this.height - this.options.padding.bottom - percentage * this.innerHeight;
+        }
+        
+        renderTrendLine() {
+            const data = this.options.data;
+            if (!data || data.length === 0) return;
+            
+            const xStep = this.innerWidth / (data.length - 1);
+            
+            // Create the path for the trend line
+            let pathD = '';
+            let areaPathD = '';
+            
+            data.forEach((value, index) => {
+                const x = this.options.padding.left + index * xStep;
+                const y = this.getYPosition(value);
+                
+                if (index === 0) {
+                    pathD += `M ${x},${y}`;
+                    areaPathD += `M ${x},${this.height - this.options.padding.bottom} L ${x},${y}`;
+                } else {
+                    // Use a smooth curve for the line
+                    const prevX = this.options.padding.left + (index - 1) * xStep;
+                    const prevY = this.getYPosition(data[index - 1]);
+                    const cpX1 = prevX + xStep / 3;
+                    const cpX2 = x - xStep / 3;
+                    
+                    pathD += ` C ${cpX1},${prevY} ${cpX2},${y} ${x},${y}`;
+                    areaPathD += ` C ${cpX1},${prevY} ${cpX2},${y} ${x},${y}`;
+                }
+            });
+            
+            // Complete the area path by going back to the bottom
+            const lastX = this.options.padding.left + (data.length - 1) * xStep;
+            areaPathD += ` L ${lastX},${this.height - this.options.padding.bottom} Z`;
+            
+            this.trendLine.setAttribute('d', pathD);
+            this.trendArea.setAttribute('d', areaPathD);
+        }
+        
+        renderDataPoints() {
+            this.dataPointsGroup.innerHTML = '';
+            const data = this.options.data;
+            if (!data || data.length === 0) return;
+            
+            const xStep = this.innerWidth / (data.length - 1);
+            
+            data.forEach((value, index) => {
+                const x = this.options.padding.left + index * xStep;
+                const y = this.getYPosition(value);
+                
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('class', 'data-point');
+                circle.setAttribute('cx', x);
+                circle.setAttribute('cy', y);
+                circle.setAttribute('r', 4);
+                circle.setAttribute('data-value', value);
+                circle.setAttribute('data-index', index);
+                
+                // Add event listeners for tooltip
+                circle.addEventListener('mouseover', (e) => this.showTooltip(e, value, index));
+                circle.addEventListener('mouseout', () => this.hideTooltip());
+                
+                this.dataPointsGroup.appendChild(circle);
+            });
+        }
+        
+        renderAverageLine() {
+            if (!this.options.showAverage) {
+                this.averageLine.style.display = 'none';
+                return;
+            }
+            
+            const average = this.calculateAverage();
+            const y = this.getYPosition(average);
+            
+            this.averageLine.style.display = '';
+            this.averageLine.setAttribute('x1', this.options.padding.left);
+            this.averageLine.setAttribute('y1', y);
+            this.averageLine.setAttribute('x2', this.width - this.options.padding.right);
+            this.averageLine.setAttribute('y2', y);
+        }
+        
+        showTooltip(event, value, index) {
+            const circle = event.target;
+            const rect = this.svg.getBoundingClientRect();
+            const x = parseFloat(circle.getAttribute('cx'));
+            const y = parseFloat(circle.getAttribute('cy'));
+            
+            this.tooltip.style.left = `${rect.left + x + window.scrollX}px`;
+            this.tooltip.style.top = `${rect.top + y + window.scrollY - 40}px`;
+            this.tooltip.textContent = `Value: ${value}`;
+            this.tooltip.style.opacity = 1;
+        }
+        
+        hideTooltip() {
+            this.tooltip.style.opacity = 0;
+        }
+    }
+
+    // Initialize the trend visualization
+    document.addEventListener('DOMContentLoaded', () => {
+        const trendViz = new TrendVisualization({
+            svgId: 'trend-svg',
+            data: [60, 40, 30, 45, 55, 40, 50, 70, 90, 75, 65],
+            minValue: 0,
+            maxValue: 100,
+            startLabel: 'Start',
+            endLabel: 'End',
+            gridLines: 5,
+            showAverage: true
+        });
+        
+        // Update button event listener
+        document.getElementById('update-chart').addEventListener('click', () => {
+            const dataPoints = document.getElementById('data-points').value
+                .split(',')
+                .map(val => parseFloat(val.trim()))
+                .filter(val => !isNaN(val));
+                
+            const minValue = parseFloat(document.getElementById('min-value').value);
+            const maxValue = parseFloat(document.getElementById('max-value').value);
+            const startLabel = document.getElementById('start-label').value;
+            const endLabel = document.getElementById('end-label').value;
+            const gridLines = parseInt(document.getElementById('grid-lines').value);
+            const showAverage = document.getElementById('show-average').checked;
+            
+            trendViz.updateOptions({
+                data: dataPoints,
+                minValue,
+                maxValue,
+                startLabel,
+                endLabel,
+                gridLines,
+                showAverage
+            });
+        });
+    });
+</script>
+</body>
+</html>

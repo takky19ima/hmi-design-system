@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button with Size Variations</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: white;
+        }
+
+        .container {
+            border: 2px dashed #9747ff;
+            border-radius: 16px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .button {
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: white;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: #4285f4;
+            position: relative;
+            outline: none;
+        }
+
+        /* Size variations */
+        .button.small {
+            width: 120px;
+            height: 32px;
+            padding: 6px 10px;
+            font-size: 14px;
+        }
+
+        .button.medium {
+            width: 180px;
+            height: 40px;
+            padding: 8px 12px;
+            font-size: 16px;
+        }
+
+        .button.large {
+            width: 220px;
+            height: 48px;
+            padding: 10px 16px;
+            font-size: 18px;
+        }
+
+        .button:hover:not(:disabled):not(.loading):not(.success) {
+            background-color: #1a5ad2;
+        }
+
+        .button:disabled:not(.loading):not(.success) {
+            background-color: #a4b4f4;
+            cursor: not-allowed;
+        }
+
+        /* Focus state */
+        .button:focus-visible {
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.4);
+            outline: 2px solid #4285f4;
+            outline-offset: 2px;
+        }
+
+        /* Loading state */
+        .button.loading {
+            background-color: #4285f4;
+            cursor: wait;
+            pointer-events: none;
+        }
+
+        /* Success state */
+        .button.success {
+            background-color: #34a853;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        /* Spinner styles */
+        .spinner {
+            display: none;
+        }
+
+        .button.loading .spinner {
+            display: inline-block;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .button.small .spinner {
+            width: 12px;
+            height: 12px;
+        }
+
+        .button.medium .spinner {
+            width: 16px;
+            height: 16px;
+        }
+
+        .button.large .spinner {
+            width: 20px;
+            height: 20px;
+            border-width: 3px;
+        }
+
+        /* Checkmark icon for success state */
+        .checkmark {
+            display: none;
+        }
+
+        .button.success .checkmark {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .button.small .checkmark {
+            width: 12px;
+            height: 12px;
+        }
+
+        .button.medium .checkmark {
+            width: 16px;
+            height: 16px;
+        }
+
+        .button.large .checkmark {
+            width: 20px;
+            height: 20px;
+        }
+
+        .checkmark:before {
+            content: '';
+            display: block;
+            width: 30%;
+            height: 60%;
+            border-bottom: 2px solid white;
+            border-right: 2px solid white;
+            transform: rotate(45deg);
+            margin-top: -20%;
+        }
+
+        .button.large .checkmark:before {
+            border-bottom: 3px solid white;
+            border-right: 3px solid white;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .control-group {
+            margin-top: 10px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .state-indicator {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .instructions {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button id="demoButton" class="button medium">
+            <div class="spinner"></div>
+            <div class="checkmark"></div>
+            <span class="button-text">Button</span>
+        </button>
+    </div>
+
+    <div class="controls">
+        <button onclick="enableButton()">Enable</button>
+        <button onclick="disableButton()">Disable</button>
+        <button onclick="toggleLoading()">Toggle Loading</button>
+        <button onclick="showSuccess()">Show Success</button>
+        <button onclick="simulateProcess()">Simulate Process</button>
+        
+        <div class="control-group">
+            <button onclick="setSize('small')">Small</button>
+            <button onclick="setSize('medium')">Medium</button>
+            <button onclick="setSize('large')">Large</button>
+        </div>
+    </div>
+
+    <div class="state-indicator" id="stateText">
+        Current state: Default (Medium size)
+    </div>
+
+    <div class="instructions">
+        Press Tab to focus on the button and see the focus state
+    </div>
+
+    <script>
+        const button = document.getElementById('demoButton');
+        const stateText = document.getElementById('stateText');
+        let isLoading = false;
+        let isSuccess = false;
+        let successTimeout;
+        let currentSize = 'medium';
+
+        function updateStateText() {
+            let stateDescription = 'Default';
+            
+            if (button.classList.contains('loading')) {
+                stateDescription = 'Loading';
+            } else if (button.classList.contains('success')) {
+                stateDescription = 'Success';
+            } else if (button.disabled) {
+                stateDescription = 'Disabled';
+            }
+            
+            stateText.textContent = `Current state: ${stateDescription} (${currentSize.charAt(0).toUpperCase() + currentSize.slice(1)} size)`;
+        }
+
+        function disableButton() {
+            if (isLoading || isSuccess) return;
+            
+            // Reset all states
+            button.classList.remove('loading', 'success');
+            button.disabled = true;
+            isLoading = false;
+            isSuccess = false;
+            
+            updateStateText();
+        }
+
+        function enableButton() {
+            if (isLoading || isSuccess) return;
+            
+            // Reset all states
+            button.classList.remove('loading', 'success');
+            button.disabled = false;
+            isLoading = false;
+            isSuccess = false;
+            
+            updateStateText();
+        }
+
+        function toggleLoading() {
+            if (isSuccess) return;
+            
+            isLoading = !isLoading;
+            
+            if (isLoading) {
+                button.classList.add('loading');
+                button.classList.remove('success');
+                button.disabled = true;
+            } else {
+                button.classList.remove('loading');
+                button.disabled = false;
+            }
+            
+            updateStateText();
+        }
+
+        function showSuccess() {
+            // Clear any existing timeout
+            if (successTimeout) {
+                clearTimeout(successTimeout);
+            }
+            
+            isLoading = false;
+            isSuccess = true;
+            
+            button.classList.remove('loading');
+            button.classList.add('success');
+            button.disabled = true;
+            
+            updateStateText();
+            
+            // Automatically return to default state after 2 seconds
+            successTimeout = setTimeout(() => {
+                isSuccess = false;
+                button.classList.remove('success');
+                button.disabled = false;
+                updateStateText();
+            }, 2000);
+        }
+
+        function simulateProcess() {
+            // Simulate a complete process: loading -> success -> default
+            isLoading = true;
+            isSuccess = false;
+            
+            button.classList.add('loading');
+            button.classList.remove('success');
+            button.disabled = true;
+            
+            updateStateText();
+            
+            // After 1.5 seconds, show success
+            setTimeout(() => {
+                showSuccess();
+            }, 1500);
+        }
+
+        function setSize(size) {
+            button.classList.remove('small', 'medium', 'large');
+            button.classList.add(size);
+            currentSize = size;
+            updateStateText();
+        }
+
+        // Add event listeners to show current state
+        button.addEventListener('mouseover', function() {
+            if (!button.disabled && !isLoading && !isSuccess) {
+                stateText.textContent = `Current state: Hover (${currentSize.charAt(0).toUpperCase() + currentSize.slice(1)} size)`;
+            }
+        });
+
+        button.addEventListener('mouseout', function() {
+            if (!button.disabled && !isLoading && !isSuccess) {
+                updateStateText();
+            }
+        });
+
+        button.addEventListener('focus', function() {
+            if (!button.disabled && !isLoading && !isSuccess) {
+                stateText.textContent = `Current state: Focus (${currentSize.charAt(0).toUpperCase() + currentSize.slice(1)} size)`;
+            }
+        });
+
+        button.addEventListener('blur', function() {
+            if (!button.disabled && !isLoading && !isSuccess) {
+                updateStateText();
+            }
+        });
+    </script>
+</body>
+</html>

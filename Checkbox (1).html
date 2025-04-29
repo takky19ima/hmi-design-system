@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Checkbox</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: white;
+        }
+
+        .container {
+            border: 2px dashed #9747ff;
+            border-radius: 16px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .checkbox-wrapper.disabled {
+            cursor: not-allowed;
+        }
+
+        /* Hide the default checkbox */
+        .checkbox-input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+        /* Create a custom checkbox */
+        .checkbox-custom {
+            position: relative;
+            height: 24px;
+            width: 24px;
+            background-color: white;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        /* When the checkbox is checked */
+        .checkbox-input:checked ~ .checkbox-custom {
+            background-color: #4285f4;
+            border-color: #4285f4;
+        }
+
+        /* Create the checkmark (hidden when not checked) */
+        .checkmark {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        /* Show the checkmark when checked */
+        .checkbox-input:checked ~ .checkbox-custom .checkmark {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Style the checkmark */
+        .checkmark:after {
+            content: '';
+            display: block;
+            width: 30%;
+            height: 60%;
+            border-bottom: 2px solid white;
+            border-right: 2px solid white;
+            transform: rotate(45deg);
+            margin-top: -20%;
+        }
+
+        /* Style the checkbox text */
+        .checkbox-text {
+            font-size: 16px;
+            color: #000000;
+        }
+
+        /* Style for focus state */
+        .checkbox-input:focus ~ .checkbox-custom {
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.3);
+        }
+
+        /* Style for disabled state */
+        .checkbox-wrapper.disabled .checkbox-custom {
+            background-color: #f8f8f8;
+            border-color: #e9ecef;
+        }
+
+        /* Style for disabled checked state */
+        .checkbox-wrapper.disabled .checkbox-input:checked ~ .checkbox-custom {
+            background-color: #a4b4f4;
+            border-color: #a4b4f4;
+        }
+
+        /* Style for disabled text */
+        .checkbox-wrapper.disabled .checkbox-text {
+            color: #6c757d;
+        }
+
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .state-indicator {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Single checkbox that will change states -->
+        <label id="checkboxWrapper" class="checkbox-wrapper">
+            <input id="checkbox" type="checkbox" class="checkbox-input">
+            <span class="checkbox-custom">
+                <span class="checkmark"></span>
+            </span>
+            <span class="checkbox-text">Checkbox Text</span>
+        </label>
+    </div>
+
+    <div class="controls">
+        <button onclick="setUnchecked()">Unchecked</button>
+        <button onclick="setChecked()">Checked</button>
+        <button onclick="setDisabledUnchecked()">Disabled (Unchecked)</button>
+        <button onclick="setDisabledChecked()">Disabled (Checked)</button>
+        <button onclick="setFocus()">Focus</button>
+    </div>
+
+    <div class="state-indicator" id="stateText">
+        Current state: Unchecked
+    </div>
+
+    <script>
+        const checkbox = document.getElementById('checkbox');
+        const checkboxWrapper = document.getElementById('checkboxWrapper');
+        const stateText = document.getElementById('stateText');
+
+        function updateStateText() {
+            let state = checkbox.checked ? 'Checked' : 'Unchecked';
+            if (checkbox.disabled) {
+                state += ' (Disabled)';
+            }
+            stateText.textContent = `Current state: ${state}`;
+        }
+
+        function setUnchecked() {
+            checkbox.checked = false;
+            checkbox.disabled = false;
+            checkboxWrapper.classList.remove('disabled');
+            updateStateText();
+        }
+
+        function setChecked() {
+            checkbox.checked = true;
+            checkbox.disabled = false;
+            checkboxWrapper.classList.remove('disabled');
+            updateStateText();
+        }
+
+        function setDisabledUnchecked() {
+            checkbox.checked = false;
+            checkbox.disabled = true;
+            checkboxWrapper.classList.add('disabled');
+            updateStateText();
+        }
+
+        function setDisabledChecked() {
+            checkbox.checked = true;
+            checkbox.disabled = true;
+            checkboxWrapper.classList.add('disabled');
+            updateStateText();
+        }
+
+        function setFocus() {
+            checkbox.disabled = false;
+            checkboxWrapper.classList.remove('disabled');
+            checkbox.focus();
+            stateText.textContent = 'Current state: Focus';
+        }
+
+        // Add event listeners to update state text
+        checkbox.addEventListener('change', updateStateText);
+        checkbox.addEventListener('focus', function() {
+            if (!checkbox.disabled) {
+                stateText.textContent = 'Current state: Focus';
+            }
+        });
+        checkbox.addEventListener('blur', updateStateText);
+
+        // Initialize state text
+        updateStateText();
+    </script>
+</body>
+</html>

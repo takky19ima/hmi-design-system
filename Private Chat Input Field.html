@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HMI Text Input</title>
+  <!-- Import Inter font -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <style>
+    :root {
+      --input-bg: #f8f9fa;
+      --input-text: #000;
+      --button-bg: #f0f1f2;
+      --button-active: #e0e0e0;
+      --button-text: #333;
+      --accent-color: #6961ff;
+      --border-radius-sm: 12px;
+      --border-radius-md: 16px;
+      --border-radius-lg: 20px;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #ffffff;
+      padding: 20px;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .input-container {
+      position: relative;
+      margin-bottom: 20px;
+      transition: all 0.3s ease;
+      width: auto;
+      display: inline-block;
+    }
+    
+    /* Input size variants */
+    .hmi-input {
+      border-radius: var(--border-radius-md);
+      border: none;
+      background-color: var(--input-bg);
+      color: var(--input-text);
+      text-align: right;
+      font-weight: 500;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      transition: all 0.2s;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .hmi-input.small {
+      padding: 16px 20px;
+      font-size: 18px;
+      border-radius: var(--border-radius-sm);
+      width: 200px;
+    }
+    
+    .hmi-input.medium {
+      padding: 24px 30px;
+      font-size: 24px;
+      border-radius: var(--border-radius-md);
+      width: 300px;
+    }
+    
+    .hmi-input.large {
+      padding: 32px 40px;
+      font-size: 32px;
+      border-radius: var(--border-radius-lg);
+      width: 400px;
+    }
+    
+    .hmi-input:focus {
+      outline: none;
+      background-color: #f0f1f2;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    
+    .hmi-input::placeholder {
+      color: var(--input-text);
+      opacity: 1;
+    }
+    
+    /* Size variant buttons */
+    .size-variants {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+    
+    .size-button {
+      padding: 12px 20px;
+      border: none;
+      background-color: var(--button-bg);
+      color: var(--button-text);
+      border-radius: var(--border-radius-sm);
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-height: 48px;
+      min-width: 100px;
+    }
+    
+    .size-button:hover {
+      background-color: #e8e9ea;
+    }
+    
+    .size-button.active {
+      background-color: var(--accent-color);
+      color: white;
+    }
+    
+    /* Touch-friendly styles */
+    .hmi-input, .size-button {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Demo section */
+    .demo-section {
+      margin-top: 40px;
+      padding: 20px;
+      background-color: #f8f9fa;
+      border-radius: var(--border-radius-md);
+      width: 100%;
+      max-width: 600px;
+    }
+    
+    .demo-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #333;
+    }
+    
+    .demo-description {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+      .size-button {
+        padding: 10px 15px;
+        font-size: 14px;
+        min-height: 44px;
+        min-width: 80px;
+      }
+      
+      .hmi-input.small {
+        padding: 14px 16px;
+        font-size: 16px;
+        width: 160px;
+      }
+      
+      .hmi-input.medium {
+        padding: 18px 20px;
+        font-size: 20px;
+        width: 220px;
+      }
+      
+      .hmi-input.large {
+        padding: 24px 30px;
+        font-size: 26px;
+        width: 280px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="size-variants">
+      <button class="size-button" data-size="small">Small</button>
+      <button class="size-button active" data-size="medium">Medium</button>
+      <button class="size-button" data-size="large">Large</button>
+    </div>
+    
+    <div class="input-container">
+      <input type="text" class="hmi-input medium" placeholder="Input" id="hmiInput">
+    </div>
+    
+    <div class="demo-section">
+      <div class="demo-title">About this Input Component</div>
+      <div class="demo-description">
+        This is a touch-friendly input field designed for HMI interfaces. It uses the Inter font family and comes in three size variants: small, medium, and large. The input field is optimized for touch interaction and maintains a clean, modern design.
+        <br><br>
+        The field accepts any text input and can be integrated into various HMI applications.
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Get elements
+    const input = document.getElementById('hmiInput');
+    const sizeButtons = document.querySelectorAll('.size-button');
+    
+    // Size variant buttons
+    sizeButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        // Remove active class from all buttons
+        sizeButtons.forEach(btn => btn.classList.remove('active'));
+        
+        // Add active class to clicked button
+        this.classList.add('active');
+        
+        // Get size value
+        const size = this.getAttribute('data-size');
+        
+        // Remove all size classes from input
+        input.classList.remove('small', 'medium', 'large');
+        
+        // Add the selected size class
+        input.classList.add(size);
+      });
+    });
+    
+    // For touch devices, ensure the input is properly focused
+    input.addEventListener('touchstart', function(e) {
+      // This helps ensure better focus behavior on touch devices
+      setTimeout(() => {
+        this.focus();
+      }, 100);
+    });
+  </script>
+</body>
+</html>
